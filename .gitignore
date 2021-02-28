@@ -4,3 +4,5 @@ config.py
 build/*
 setup.py
 *.secret
+.vscode/*
+.DS_Store

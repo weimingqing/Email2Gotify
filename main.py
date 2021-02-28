@@ -12,15 +12,25 @@ while True:
     imap.select(folder)
     while True:
         try:
-            result, numbers = imap.search('search', None, '(UNSEEN)')
-            uids = numbers[0].split()
+            retcode, messages = imap.search(None, '(UNSEEN)')
+            if retcode != 'OK':
+                raise Exception(f'Fetching messages failed with {retcode}')
+            else:
+                uids = messages[0].split()
             print(f"Found new mail(s) in folder: {uids}")
             for i in uids:
                 typ, data = imap.fetch(i, '(RFC822)')
-                try:
-                    message = email.message_from_string(data[0][1].decode('utf-8'))
-                except:
-                    message = email.message_from_string(data[0][1].decode('GB2312'))
+                encodes = ['utf-8', 'GB2312', 'US-ASCII']
+                for encode in encodes:
+                    try:
+                        message = email.message_from_string(data[0][1].decode(encode))
+                    except:
+                        print(f"Cannot decode with {encode}")
+                    else:
+                        messageEncoding = encode
+                        break
+                if not messageEncoding:
+                    raise Exception('No encoding can decode the message')
                 subject = message['Subject']
                 date = email.utils.parsedate_to_datetime(message['Date']) if message['Date'] else None
                 sender = email.utils.parseaddr(message['From'])[1]
@@ -67,8 +77,10 @@ while True:
                         'title': title,
                         'message': {contentPlainText},
                         'priority': 5})
-                print(f"Gotify message is sent: {resp}")
-
+                if (resp.status_code != 200):
+                    print(f"Gotify message was not successfully sent: {resp}")
+                else:
+                    print("Gotify message is sent for the mail successfully.")
                 # mark mail as Read so it won't be pushed to Gotify again
                 imap.store(i, '+FLAGS', '\Seen')
         except KeyboardInterrupt:
