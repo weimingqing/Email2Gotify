@@ -6,3 +6,4 @@ folder = "Inbox"
 gotifyurl = "url to the gotify server (append /message at the end)"
 token = "token for the gotify app"
 msgprefix = ""
+infiniteloop = True

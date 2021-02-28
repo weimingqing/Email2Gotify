@@ -2,7 +2,6 @@
 from settings import *
 import email
 
-logoutAndExit = False
 while True:
     imap = IMAP4_SSL(host=url, ssl_context=context)
     print("Logging into mailbox...")
@@ -83,18 +82,20 @@ while True:
                     print("Gotify message is sent for the mail successfully.")
                 # mark mail as Read so it won't be pushed to Gotify again
                 imap.store(i, '+FLAGS', '\Seen')
-        except KeyboardInterrupt:
-            logoutAndExit = True
-            break
         except Exception as e:
             print(f"Got exception: {e}.")
-            print("Wait and trying to re-establish connection...")
-            time.sleep(60)
+            if infiniteloop:
+                print("Wait and trying to re-establish connection...")
+                time.sleep(60)
             break
         else:
-            print("Sleep 60 seconds...")
-            time.sleep(60)
-    if (logoutAndExit): break
+            if (not infiniteloop): 
+                break
+            else:
+                print("Sleep 60 seconds...")
+                time.sleep(60)
+    if (not infiniteloop): 
+        break
 print("Logging out mailbox...")
 imap.close()
 imap.logout()
