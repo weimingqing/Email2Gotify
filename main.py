@@ -5,17 +5,15 @@ import email
 while True:
     imap = IMAP4_SSL(host=url, ssl_context=context)
     print("Logging into mailbox...")
-    r, d = imap.login(user, password)
-    assert r == 'OK', 'login failed'
+    retcode, d = imap.login(user, password)
+    assert retcode == 'OK', 'login failed'
     print(f"Select folder: {folder}.")
     imap.select(folder)
     while True:
         try:
             retcode, messages = imap.search(None, '(UNSEEN)')
-            if retcode != 'OK':
-                raise Exception(f'Fetching messages failed with {retcode}')
-            else:
-                uids = messages[0].split()
+            assert retcode == 'OK', 'search messages failed'
+            uids = messages[0].split()
             print(f"Found new mail(s) in folder: {uids}")
             for i in uids:
                 typ, data = imap.fetch(i, '(RFC822)')
