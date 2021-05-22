@@ -61,9 +61,11 @@ while True:
                             # f.close()
                     else:
                         if part.get_content_subtype() == 'plain':
-                            contentPlainText = part.get_payload(decode=True).decode(part.get_content_charset())
+                            content = part.get_payload(decode=True).decode(part.get_content_charset())
                         elif part.get_content_subtype() == 'html':
-                            contentHTML = part.get_payload(decode=True).decode(part.get_content_charset())
+                            content = part.get_payload(decode=True).decode(part.get_content_charset())
+                        else:
+                            content = "unknown content type"
 
                 # push message to Gotify
                 title = "{0}{1}".format(msgprefix,subject)
@@ -72,7 +74,7 @@ while True:
                     headers=headers,
                     data={
                         'title': title,
-                        'message': {contentPlainText},
+                        'message': {content},
                         'priority': 5})
                 if (resp.status_code != 200):
                     print(f"Gotify message was not successfully sent: {resp}")
